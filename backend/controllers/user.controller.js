@@ -9,6 +9,7 @@ const getUserForSidebar = async (req, res) => {
     
         users.forEach(user => {
             userData = user.data();
+            userData.id = user.id;
             delete userData.password;
             userList.push(userData);
         })
