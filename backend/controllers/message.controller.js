@@ -2,8 +2,29 @@ const { db } = require("../db/firebase");
 const firebase = require("firebase-admin");
 
 const getMessages = async (req, res) => {
-    res.status(200).json({ message: "ok" });
+    try {
+        const senderId = req.user.id;
+        const { id: receiverId } = req.params;
 
+        const conversationSnapshot = await db.collection("conversations")
+            .where("participants", "array-contains", senderId)
+            .get();
+
+        const conversationRef = conversationSnapshot.docs.find(doc => {
+            const participants = doc.data().participants;
+            return participants.includes(receiverId);
+        });
+
+        if (!conversationRef) {
+            return res.status(200).json([]);
+        }
+
+        res.status(200).json(conversationRef.data().messages);
+        
+    } catch (error) {
+        console.log("Error in getMessages controller", error.message);
+        res.status(500).json({ error: "Internal server error" });
+    }
 }
 
 const sendMessage = async (req, res) => {
