@@ -77,19 +77,48 @@ const sendMessage = async (req, res) => {
     }
 }
 
+const updateMessage = async (req, res) => {
+    try {
+        const { message: newMessage } = req.body;
+        const { id: messageId } = req.params;
+        const senderId = req.user.id;
+
+        const messageRef = db.collection("messages").doc(messageId);
+        const message = await messageRef.get();
+        if (!message.exists) {
+            return res.status(400).json({ error: "Message not found" });
+        }
+
+        // Only sender can update message
+        if (senderId !== message.data().senderId) {
+            return res.status(403).json({ error: "You can't update this message" });
+        }
+        
+        await messageRef.update({
+            message: newMessage
+        });
+
+        res.status(200).json({ message: "Message updated successfully" })
+
+    } catch (error) {
+        console.log("Error in updateMessage controller", error.message);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
 const deleteMessage = async (req, res) => {
     try {
         const senderId = req.user.id;
         const { id: messageId } = req.params;
         
-        const messageDoc = db.collection("messages").doc(messageId);
-        const messageRef = await messageDoc.get();
-        if (!messageRef.exists) {
+        const messageRef = db.collection("messages").doc(messageId);
+        const message = await messageRef.get();
+        if (!message.exists) {
             return res.status(400).json({ error: "Message not found" });
         }
 
         // Only person, which send message, can delete it
-        if (senderId !== messageRef.data().senderId) {
+        if (senderId !== message.data().senderId) {
             return res.status(403).json({ error: "You can't delete this message" });
         }
 
@@ -99,7 +128,7 @@ const deleteMessage = async (req, res) => {
         
         const conversationDoc = conversationSnapshot.docs.find(doc => {
             const participants = doc.data().participants;
-            return participants.includes(messageRef.data().receiverId)
+            return participants.includes(message.data().receiverId)
         });
 
         if (!conversationDoc) {
@@ -110,7 +139,7 @@ const deleteMessage = async (req, res) => {
         await conversationDoc.ref.update({
             messages: FieldValue.arrayRemove(messageId)
         });
-        await messageDoc.delete();
+        await messageRef.delete();
         
         res.status(200).json({ message: "Message deleted successfully" });
     
@@ -120,4 +149,4 @@ const deleteMessage = async (req, res) => {
     }
 }
 
-module.exports = { getMessages, sendMessage, deleteMessage };
+module.exports = { getMessages, sendMessage, updateMessage, deleteMessage };
