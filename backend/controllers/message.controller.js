@@ -113,6 +113,8 @@ const updateMessage = async (req, res) => {
         const { id: messageId } = req.params;
         const senderId = req.user.id;
 
+        if (!newMessage) return res.status(400).json({ error: "You must provide update message text" });
+
         const messageRef = db.collection("messages").doc(messageId);
         const message = await messageRef.get();
         if (!message.exists) {
