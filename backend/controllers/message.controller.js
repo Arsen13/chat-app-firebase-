@@ -1,6 +1,7 @@
 const { FieldValue } = require("firebase-admin/firestore");
 const { db } = require("../db/firebase");
 const firebase = require("firebase-admin");
+const uploadFile = require("../utils/fileUpload");
 
 const getMessages = async (req, res) => {
     try {
@@ -20,7 +21,14 @@ const getMessages = async (req, res) => {
             return res.status(200).json([]);
         }
 
-        res.status(200).json(conversationRef.data().messages);
+        const messagePromises = conversationRef.data().messages.map(async (message) => {
+            const doc = await db.collection("messages").doc(message).get();
+            return doc.data();
+        });
+
+        const messages = await Promise.all(messagePromises);
+
+        res.status(200).json(messages);
 
     } catch (error) {
         console.log("Error in getMessages controller", error.message);
@@ -33,7 +41,12 @@ const sendMessage = async (req, res) => {
         const { message: messageText } = req.body;
         const senderId = req.user.id;
         const receiverId = req.params.id;
-    
+        let fileUrl;
+
+        if (!messageText && !req.file) {
+            return res.status(400).json({ error: "You must provide message text or file" });
+        }
+
         const conversationSnapshot = await db.collection("conversations")
             .where("participants", "array-contains", senderId)
             .get();
@@ -55,18 +68,35 @@ const sendMessage = async (req, res) => {
                 messages: []
             });
         }
-    
-        // Create new message
-        const messageRef = db.collection("messages").doc();
-        await messageRef.set({
-            senderId: senderId,
-            receiverId: receiverId,
-            message: messageText
-        });
+
+        let messageToPushInDb = [];
+
+        // Create new message with link url
+        if (req.file) {
+            fileUrl = await uploadFile(req.file);
+            const messageRef = db.collection("messages").doc();
+            await messageRef.set({
+                senderId: senderId,
+                receiverId: receiverId,
+                link: fileUrl
+            });
+            messageToPushInDb.push(messageRef.id);
+        }
+
+        // Create new message with message text
+        if (messageText) {
+            const messageRef = db.collection("messages").doc();
+            await messageRef.set({
+                senderId: senderId,
+                receiverId: receiverId,
+                message: messageText
+            });
+            messageToPushInDb.push(messageRef.id)
+        }
 
         // Add new message into conversation
         await db.collection("conversations").doc(conversationRef.id).set({
-            messages: firebase.firestore.FieldValue.arrayUnion(messageRef.id)
+            messages: firebase.firestore.FieldValue.arrayUnion(...messageToPushInDb)
         }, { merge: true });
         
         res.status(200).json({ message: "Message send successfully" });
