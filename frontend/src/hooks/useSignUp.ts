@@ -2,6 +2,8 @@ import { useState } from "react";
 import handleInputErrors from "../utils/handleInputErrors";
 import axiosInstance from "../utils/axiosInstance";
 import { useAuthContext } from "../context/AuthContext";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 type signupParams = {
     fullName: string,
@@ -35,8 +37,12 @@ function useSignUp() {
             localStorage.setItem("user-info", JSON.stringify(data));
             setAuthUser(data);
 
-        } catch (error: unknown) {
-            console.log(error);
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
+                toast.error(error.response.data.error);
+            } else {
+                console.log(error);
+            }
         } finally {
             setLoading(false);
         }
