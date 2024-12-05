@@ -1,6 +1,7 @@
 import { useState } from "react";
 import handleInputErrors from "../utils/handleInputErrors";
 import axiosInstance from "../utils/axiosInstance";
+import { useAuthContext } from "../context/AuthContext";
 
 type signupParams = {
     fullName: string,
@@ -12,6 +13,7 @@ type signupParams = {
 
 function useSignUp() {
     const [loading, setLoading] = useState(false);
+    const { setAuthUser } = useAuthContext();
 
     const signup = async ({fullName, username, password, confirmPassword, gender}: signupParams) => {
         const success = handleInputErrors({fullName, username, password, confirmPassword, gender});
@@ -29,7 +31,9 @@ function useSignUp() {
             });
 
             const data = await res.data;
-            console.log(data);
+            
+            localStorage.setItem("user-info", JSON.stringify(data));
+            setAuthUser(data);
 
         } catch (error: unknown) {
             console.log(error);
