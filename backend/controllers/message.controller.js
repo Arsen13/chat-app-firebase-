@@ -22,8 +22,9 @@ const getMessages = async (req, res) => {
         }
 
         const messagePromises = conversationRef.data().messages.map(async (message) => {
-            const doc = await db.collection("messages").doc(message).get();
-            return doc.data();
+            const messageRef = db.collection("messages").doc(message)
+            const doc = await messageRef.get();
+            return {...doc.data(), id: messageRef.id};
         });
 
         const messages = await Promise.all(messagePromises);
