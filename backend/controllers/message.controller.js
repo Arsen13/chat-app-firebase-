@@ -70,28 +70,35 @@ const sendMessage = async (req, res) => {
         }
 
         let messageToPushInDb = [];
+        let responseData = [];
 
         // Create new message with link url
         if (req.file) {
             fileUrl = await uploadFile(req.file);
-            const messageRef = db.collection("messages").doc();
-            await messageRef.set({
+            const dataObj = {
                 senderId: senderId,
                 receiverId: receiverId,
                 link: fileUrl
-            });
+            };
+            const messageRef = db.collection("messages").doc();
+            await messageRef.set(dataObj);
+
             messageToPushInDb.push(messageRef.id);
+            responseData.push(dataObj);
         }
 
         // Create new message with message text
         if (messageText) {
-            const messageRef = db.collection("messages").doc();
-            await messageRef.set({
+            const dataObj = {
                 senderId: senderId,
                 receiverId: receiverId,
                 message: messageText
-            });
-            messageToPushInDb.push(messageRef.id)
+            };
+            const messageRef = db.collection("messages").doc();
+            await messageRef.set(dataObj);
+
+            messageToPushInDb.push(messageRef.id);
+            responseData.push(dataObj);
         }
 
         // Add new message into conversation
@@ -99,7 +106,7 @@ const sendMessage = async (req, res) => {
             messages: firebase.firestore.FieldValue.arrayUnion(...messageToPushInDb)
         }, { merge: true });
         
-        res.status(200).json({ message: "Message send successfully" });
+        res.status(200).json(responseData);
 
     } catch (error) {
         console.log("Error in sendMessage controller", error.message);
