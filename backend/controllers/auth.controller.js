@@ -33,6 +33,7 @@ const signup = async (req, res) => {
         setAuthToken(userRef.id, res);
 
         res.status(201).json({
+            id: userRef.id,
             fullName,
             username,
             profilePic
@@ -61,7 +62,14 @@ const login = async (req, res) => {
 
             setAuthToken(user.id, res);
 
-            return res.status(200).json({message: "Successfully logged in" });
+            const responseData = {
+                id: user.id,
+                fullName: user.data().fullName,
+                username: user.data().username,
+                profilePic: user.data().profilePic
+            };
+
+            return res.status(200).json(responseData);
         })
             
     } catch (error) {
