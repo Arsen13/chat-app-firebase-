@@ -16,11 +16,21 @@ type MessagesType = {
     id: string
 }[];
 
+export type ConversationsType = {
+    fullName: string,
+    username: string,
+    gender: string,
+    profilePic: string,
+    id: string
+}[];
+
 interface ConversationState {
     selectedConversation: ConversationType | null,
     setSelectedConversation: (selectedConversation: ConversationType) => void,
     messages: MessagesType | [],
     setMessages: (messages: MessagesType) => void,
+    conversations: ConversationsType | [],
+    setConversations: (conversations: ConversationsType | []) => void
 };
 
 const useConversation = create<ConversationState>((set) => ({
@@ -28,6 +38,8 @@ const useConversation = create<ConversationState>((set) => ({
     setSelectedConversation: (selectedConversation) => set({ selectedConversation }),
     messages: [],
     setMessages: (messages) => set({ messages }),
+    conversations: [],
+    setConversations: (conversations) => set({ conversations })
 }));
 
 export default useConversation;

@@ -2,10 +2,11 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axiosInstance from "../utils/axiosInstance";
+import useConversation from "../store/useConversation";
 
 function useGetConversations() {
     const [loading, setLoading] = useState(false);
-    const [conversations, setConversations] = useState([]);
+    const { conversations, setConversations } = useConversation();
 
     useEffect(() => {
         const getConversations = async () => {
@@ -28,7 +29,7 @@ function useGetConversations() {
         getConversations();
     }, [])
 
-    return { loading, conversations }
+    return { loading, conversations, setConversations }
 }
 
 export default useGetConversations;
