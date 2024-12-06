@@ -17,7 +17,7 @@ function useSendMessage() {
                 }
             });
 
-            setMessages([...messages, res.data]);
+            setMessages([...messages, ...res.data]);
             
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) {

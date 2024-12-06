@@ -11,7 +11,9 @@ type ConversationType = {
 type MessagesType = {
     senderId: string,
     receiverId: string,
-    message: string
+    message?: string,
+    link?: string,
+    id: string
 }[];
 
 interface ConversationState {

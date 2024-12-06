@@ -4,7 +4,12 @@ type AuthContextProviderProps = {
     children: React.ReactNode
 };
 
-type UserInfo = string | null;
+type UserInfo = {
+    id: string,
+    fullName: string,
+    username: string,
+    profilePic: string
+} | null;
 
 type AuthContextType = {
     authUser: UserInfo,
@@ -22,7 +27,14 @@ export const useAuthContext = () => {
 }
 
 export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
-    const [authUser, setAuthUser] = useState<UserInfo>(localStorage.getItem('user-info'));
+    const userInfo = localStorage.getItem('user-info');
+    const [authUser, setAuthUser] = useState<UserInfo>(() => {
+        try {
+            return userInfo ? JSON.parse(userInfo) : null;
+        } catch (e) {
+            return null;
+        }
+    });
 
     return <AuthContext.Provider value={{authUser, setAuthUser}}>
         { children }
