@@ -2,13 +2,16 @@ import { BsSend } from "react-icons/bs";
 import { HiOutlinePaperClip } from "react-icons/hi2";
 import useSendMessage from "../../hooks/useSendMessage";
 import { ChangeEvent, useState } from "react";
+import { useMessageContext } from "../../context/MessageContext";
+import useUpdateMessage from "../../hooks/useUpdateMessage";
 
 function MessageInput() {
 
-    const [messageText, setMessageText] = useState("");
     const [file, setFile] = useState<File | null>(null);
+    const { messageText, setMessageText, updateMessage, setUpdateMessage, messageId } = useMessageContext();
 
     const { loading, sendMessage } = useSendMessage();
+    const { updateMessageFunc } = useUpdateMessage();
 
     const handleChangeFile = (e: ChangeEvent<HTMLInputElement>) => {
         const files = e.currentTarget.files;
@@ -17,12 +20,18 @@ function MessageInput() {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
         const formData = new FormData();
         
         if (messageText !== "") formData.append("message", messageText);
         if (file) formData.append("filename", file);
         
-        await sendMessage(formData);
+        if (updateMessage) {
+            setUpdateMessage(false);
+            await updateMessageFunc(formData, messageId)
+        } else {
+            await sendMessage(formData);
+        }
 
         setMessageText("");
         setFile(null);

@@ -145,6 +145,8 @@ const updateMessage = async (req, res) => {
             message: newMessage
         });
 
+        io.emit("updateMessage", {messageId, newMessage});
+
         res.status(200).json({ message: "Message updated successfully" })
 
     } catch (error) {

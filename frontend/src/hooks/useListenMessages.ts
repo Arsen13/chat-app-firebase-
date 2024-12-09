@@ -16,9 +16,20 @@ const useListenMessages = () => {
             setMessages(filteredMessages);
         })
 
+        socket?.on("updateMessage", ({messageId, newMessage}) => {
+            const filteredMessages = messages.map(message => {
+                if (message.id === messageId) {
+                    return {...message, message: newMessage};
+                }
+                return message
+            });
+            setMessages(filteredMessages);
+        })
+
         return () => {
             socket?.off("newMessage");
             socket?.off("deleteMessage");
+            socket?.off("updateMessage");
         }
     }, [socket, messages, setMessages])
 }

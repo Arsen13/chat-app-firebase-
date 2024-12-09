@@ -3,6 +3,7 @@ import useConversation from "../../store/useConversation";
 import MessageInput from "./MessageInput";
 import Messages from "./Messages";
 import NoChatSelected from "./NoChatSelected";
+import { MessageContextProvider } from "../../context/MessageContext";
 
 function MessageContainer() {
 
@@ -21,8 +22,10 @@ function MessageContainer() {
                         <span className="text-white font-semibold">{selectedConversation.fullName}</span>
                     </div>
             
-                    <Messages />
-                    <MessageInput />
+                    <MessageContextProvider>
+                        <Messages />
+                        <MessageInput />
+                    </MessageContextProvider>
                 </>
             )}
         </div>
