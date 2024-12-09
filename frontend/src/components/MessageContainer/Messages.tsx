@@ -24,7 +24,7 @@ function Messages() {
                         key={message.id}
                         ref={lastMessageRef}
                     >
-                        <Message senderId={message.senderId} message={message?.message} link={message?.link} />
+                        <Message senderId={message.senderId} message={message?.message} link={message?.link} messageId={message.id} />
                     </div>
             ))}
             {loading && [...Array(3)].map((_, idx) => <MessageSkeleton key={idx} /> )}

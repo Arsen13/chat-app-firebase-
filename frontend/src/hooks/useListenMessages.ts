@@ -8,12 +8,17 @@ const useListenMessages = () => {
 
     useEffect(() => {
         socket?.on("newMessage", (newMessage) => {
-            console.log(newMessage)
             setMessages([...messages, newMessage]);
+        })
+
+        socket?.on("deleteMessage", (deletedMessageId) => {
+            const filteredMessages = messages.filter(message => message.id !== deletedMessageId);
+            setMessages(filteredMessages);
         })
 
         return () => {
             socket?.off("newMessage");
+            socket?.off("deleteMessage");
         }
     }, [socket, messages, setMessages])
 }

@@ -188,6 +188,8 @@ const deleteMessage = async (req, res) => {
         });
         await messageRef.delete();
         
+        io.emit("deleteMessage", messageId);
+
         res.status(200).json({ message: "Message deleted successfully" });
     
     } catch (error) {
