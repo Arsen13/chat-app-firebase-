@@ -2,6 +2,7 @@ const { FieldValue } = require("firebase-admin/firestore");
 const { db } = require("../db/firebase");
 const firebase = require("firebase-admin");
 const uploadFile = require("../utils/fileUpload");
+const { getReceiverSocketId, io } = require("../socket/socket");
 
 const getMessages = async (req, res) => {
     try {
@@ -85,7 +86,7 @@ const sendMessage = async (req, res) => {
             await messageRef.set(dataObj);
 
             messageToPushInDb.push(messageRef.id);
-            responseData.push(dataObj);
+            responseData.push({...dataObj, id: messageRef.id});
         }
 
         // Create new message with message text
@@ -99,13 +100,19 @@ const sendMessage = async (req, res) => {
             await messageRef.set(dataObj);
 
             messageToPushInDb.push(messageRef.id);
-            responseData.push(dataObj);
+            responseData.push({...dataObj, id: messageRef.id});
         }
 
         // Add new message into conversation
         await db.collection("conversations").doc(conversationRef.id).set({
             messages: firebase.firestore.FieldValue.arrayUnion(...messageToPushInDb)
         }, { merge: true });
+
+        const receiverSocketId = getReceiverSocketId(receiverId);
+        if (receiverSocketId) {
+            //send this message to user
+            io.to(receiverSocketId).emit("newMessage", ...responseData);
+        }
         
         res.status(200).json(responseData);
 
