@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
@@ -33,6 +34,12 @@ app.use(limiter);
 app.use("/api/auth", authRoutes);
 app.use('/api/message', messageRoutes);
 app.use('/api/user', userRoutes);
+
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
+
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend', 'dist', 'index.html'));
+})
 
 server.listen(PORT, () => {
     console.log(`Server is running on: ${PORT} port`);
