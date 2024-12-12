@@ -5,6 +5,7 @@ import { MdDeleteOutline } from "react-icons/md";
 import { RxUpdate } from "react-icons/rx";
 import deleteMessage from "../../hooks/useDeleteMessage";
 import { useMessageContext } from "../../context/MessageContext";
+import toast from "react-hot-toast";
 
 type MessageProps = {
     senderId: string,
@@ -25,6 +26,11 @@ function Message({senderId, message, link, messageId }: MessageProps) {
     const messageBgColor = fromMe ? "bg-indigo-600" : "bg-emerald-700";
 
     const handleUpdateMessage = () => {
+        if (!fromMe) {
+            toast.error("You can't update this message");
+            return;
+        }
+
         if (message) {
             setUpdateMessage(true);
             setMessageText(message);
