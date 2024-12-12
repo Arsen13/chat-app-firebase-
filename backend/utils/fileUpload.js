@@ -2,21 +2,17 @@ const { bucket } = require('../db/firebase');
 
 const uploadFile = async (file) => {
     try {
-        const dateTime = new Date().toISOString();
+        const fileName = `${Date.now()}` + file.originalname;
+        var buffer = new Uint8Array(file.buffer);
+        const url = await bucket
+            .file(fileName)
+            .getSignedUrl({
+                action: "read",
+                expires: "12-31-2025"
+            });
 
-        const filePath = `files/${file.originalname}_${dateTime}`;
-        const fileRef = bucket.file(filePath);
+        await bucket.file(fileName).save(buffer, { resumable: true });
 
-        const metadata = {
-            contentType: file.mimetype,
-        };
-    
-        await fileRef.save(file.buffer, { metadata });  
-        const [url] = await fileRef.getSignedUrl({
-            action: 'read',
-            expires: '12-31-2025'
-        });
-    
         return url;
     } catch (error) {
         console.log("Error in uploadFile function", error.message);

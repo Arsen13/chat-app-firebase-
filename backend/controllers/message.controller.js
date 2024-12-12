@@ -3,6 +3,7 @@ const { db } = require("../db/firebase");
 const firebase = require("firebase-admin");
 const uploadFile = require("../utils/fileUpload");
 const { getReceiverSocketId, io } = require("../socket/socket");
+const storeFiles = require("../utils/storeFiles");
 
 const getMessages = async (req, res) => {
     try {
@@ -43,9 +44,9 @@ const sendMessage = async (req, res) => {
         const { message: messageText } = req.body;
         const senderId = req.user.id;
         const receiverId = req.params.id;
-        let fileUrl;
+        const files = req.files;
 
-        if (!messageText && !req.file) {
+        if (!messageText && (!files || files.length === 0)) {
             return res.status(400).json({ error: "You must provide message text or file" });
         }
 
@@ -75,18 +76,17 @@ const sendMessage = async (req, res) => {
         let responseData = [];
 
         // Create new message with link url
-        if (req.file) {
-            fileUrl = await uploadFile(req.file);
-            const dataObj = {
-                senderId: senderId,
-                receiverId: receiverId,
-                link: fileUrl
-            };
-            const messageRef = db.collection("messages").doc();
-            await messageRef.set(dataObj);
+        if (files) {
+            const urls = await Promise.all(files.map(uploadFile));
+            const fileDataPromises = urls.map((url) => {
+                return storeFiles(url, senderId, receiverId);
+            });
 
-            messageToPushInDb.push(messageRef.id);
-            responseData.push({...dataObj, id: messageRef.id});
+            const fileData = await Promise.all(fileDataPromises);
+            fileData.forEach(file => {
+                messageToPushInDb.push(file.id);
+                responseData.push(file.responseData);
+            })
         }
 
         // Create new message with message text

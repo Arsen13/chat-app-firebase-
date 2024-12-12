@@ -9,7 +9,7 @@ const storage = multer.memoryStorage()
 const upload = multer({ storage });
 
 router.get("/:id", protectRoute, getMessages);
-router.post("/send/:id", protectRoute, upload.single("filename"), sendMessage);
+router.post("/send/:id", protectRoute, upload.array("filename"), sendMessage);
 router.patch("/:id", protectRoute, updateMessage);
 router.delete("/:id", protectRoute, deleteMessage);
 
