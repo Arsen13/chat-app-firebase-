@@ -2,7 +2,7 @@ const { bucket } = require('../db/firebase');
 
 const uploadFile = async (file) => {
     try {
-        const fileName = `${Date.now()}` + file.originalname;
+        const fileName = file.originalname + `_${Date.now()}`;
         var buffer = new Uint8Array(file.buffer);
         const url = await bucket
             .file(fileName)
