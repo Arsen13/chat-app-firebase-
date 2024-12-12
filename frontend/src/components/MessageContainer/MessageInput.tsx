@@ -48,13 +48,13 @@ function MessageInput() {
                 />
 
                 <div className="flex flex-row absolute inset-y-0 end-0 items-center pe-3 gap-2">
-                    {files && files.length > 1 
+                    {files && files.length > 0 
                         ? (
-                            <div>{(files[0].name).replace(/^(.{0,7}).*?(\.[^.]+)$/, "$1$2")}</div>
+                            files.length > 1 
+                                ? <div>{files?.length} files</div>
+                                : <div>{(files[0].name).replace(/^(.{0,7}).*?(\.[^.]+)$/, "$1$2")}</div>
                         )
-                        : (
-                            <div>{files?.length} files</div>
-                        )
+                        : null
                     }
                     <div>
                         <label htmlFor="inputFile">
@@ -66,6 +66,7 @@ function MessageInput() {
                             id="inputFile"
                             className="hidden"
                             onChange={(e) => setFiles(e.target.files)}
+                            multiple
                         />
                     </div>
 
